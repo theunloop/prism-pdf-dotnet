@@ -75,6 +75,7 @@ jobs:
             native/runtimes
             native/corpus
             native/test-signer
+            native/THIRD-PARTY-NOTICES.md
 
   # ===============================================================================================
   # The conformance suite, on real hosts.

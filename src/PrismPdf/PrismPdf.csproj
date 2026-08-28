@@ -58,7 +58,9 @@
     <None Include="$(MSBuildThisFileDirectory)../../LICENSE.md" Pack="true" PackagePath="/"
           Visible="false" />
     <!-- The engine's own notices, fetched with the binaries they describe. Shipping a compiled
-         library means redistributing what it was built from, and those licences travel with it. -->
+         library means redistributing what it was built from, and those licences travel with it.
+         A literal Include, not a glob, so a missing file fails the pack (NU5019) rather than
+         quietly producing a package that redistributes the engine without its licences. -->
     <None Include="$(PrismPdfNativeDir)../THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="/"
           Visible="false" />
   </ItemGroup>
