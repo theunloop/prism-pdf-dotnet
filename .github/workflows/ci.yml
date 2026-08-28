@@ -1,0 +1,279 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+env:
+  # The Prism PDF core release this binding is pinned to. Keep in sync with native/VENDORED.md and
+  # PrismPdfCoreTag in Directory.Build.props — build/fetch-natives.sh reads the latter, so a
+  # disagreement here is a documentation bug rather than a build one, but fix it anyway.
+  PRISMPDF_CORE_TAG: v0.4.0
+
+  # An .slnx solution needs a 9.0.200+ SDK; the test project targets net8.0 and so needs the 8
+  # runtime, which arrives with the 8 SDK. Both, everywhere.
+  DOTNET_VERSIONS: |
+    8.0.x
+    9.0.x
+
+jobs:
+  # ===============================================================================================
+  # Everything that needs no engine. Fast, and it fails first when the raw layer has drifted from
+  # the vendored header — the failure most likely to invalidate every other job.
+  # ===============================================================================================
+  managed:
+    name: managed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSIONS }}
+
+      - name: The generated raw layer is not stale
+        run: python3 build/gen_native_methods.py --check
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      # The three fixtures that need neither a native library nor a corpus: header parity, the
+      # netstandard2.0 substitutes, and the loader's probing rules.
+      - name: Managed fixtures
+        run: >
+          dotnet test --configuration Release --no-build --logger "console;verbosity=normal"
+          --filter "FullyQualifiedName~NativeSurfaceTests|FullyQualifiedName~CompatTests|FullyQualifiedName~LoaderTests"
+
+  # ===============================================================================================
+  # Fetch the engine once, for everyone.
+  #
+  # This is the only job that needs a credential for the core repository, and doing it once rather
+  # than per-matrix-leg means the checksums are verified once and every downstream job runs against
+  # provably identical bytes. Nothing here clones the engine: --corpus also reads the core's test
+  # signer out of the pinned tag through the contents API, which was the last thing that needed a
+  # checkout.
+  # ===============================================================================================
+  natives:
+    name: natives
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and verify the published natives and corpus
+        env:
+          # A PAT with read access to the (private) core repository. Once that repository is
+          # public this can become the default GITHUB_TOKEN.
+          GH_TOKEN: ${{ secrets.PRISMPDF_CORE_TOKEN }}
+        run: build/fetch-natives.sh --tag "${PRISMPDF_CORE_TAG}" --corpus
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: engine
+          if-no-files-found: error
+          path: |
+            native/runtimes
+            native/corpus
+            native/test-signer
+
+  # ===============================================================================================
+  # The conformance suite, on real hosts.
+  #
+  # These legs prove the published binaries load where they claim to, which is the one thing no
+  # amount of managed testing can establish. Alpine is here deliberately: musl needs a separate
+  # build and a dlopen that lives in libc, and until this leg existed both were reasoned rather
+  # than observed.
+  # ===============================================================================================
+  conformance:
+    name: ${{ matrix.name }}
+    needs: [managed, natives]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux-x64,   os: ubuntu-latest }
+          - { name: osx-arm64,   os: macos-latest }
+          - { name: win-x64,     os: windows-latest }
+          # Needs arm64 runners to be available to this account. Drop the leg rather than let it
+          # queue forever if they are not — the devcontainer covers this RID day to day.
+          - { name: linux-arm64, os: ubuntu-24.04-arm }
+          - { name: linux-musl-x64, os: ubuntu-latest, container: 'mcr.microsoft.com/dotnet/sdk:8.0-alpine' }
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The container image already carries an SDK, and setup-dotnet does not support musl.
+      - uses: actions/setup-dotnet@v4
+        if: matrix.container == ''
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSIONS }}
+
+      # upload-artifact strips the least common ancestor of the paths it was given, so this
+      # artifact's root holds runtimes/, corpus/ and test-signer/ rather than native/*. Unpack it
+      # back under native/, which is where the test project and the loader expect them.
+      - uses: actions/download-artifact@v4
+        with:
+          name: engine
+          path: native
+
+      # The Alpine image has no bash, and the step below is bash (set -o pipefail, PIPESTATUS).
+      - name: Install bash
+        if: matrix.container != ''
+        run: apk add --no-cache bash
+
+      # Inside the Alpine image only an 8.0 SDK is present, which cannot read an .slnx solution —
+      # so name the project instead of letting the SDK resolve one. Everywhere else, run the
+      # solution as a consumer would.
+      #
+      # The skip check is the point of this step. Native suites skip rather than fail when pdf_ffi
+      # cannot be loaded, which is the right courtesy for a contributor with no engine and exactly
+      # the wrong outcome here: a green leg that tested nothing looks identical to one that
+      # tested everything. Fail on any skip instead.
+      - name: Test
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${{ matrix.container }}" ]; then
+            proj=tests/PrismPdf.Tests/PrismPdf.Tests.csproj
+          else
+            proj=
+          fi
+          set +e
+          dotnet test $proj --configuration Release --logger "console;verbosity=normal" \
+            2>&1 | tee results.txt
+          status=${PIPESTATUS[0]}
+          set -e
+          [ "$status" -eq 0 ] || exit "$status"
+          if grep -qE 'Skipped: *[1-9]' results.txt; then
+            echo "::error::${{ matrix.name }} skipped tests — pdf_ffi did not load, or the corpus was missing"
+            exit 1
+          fi
+
+  # ===============================================================================================
+  # The package, and whether a consumer can actually use it.
+  #
+  # dotnet pack proves nothing on its own: the failure this repository set out to fix was a package
+  # that packs, restores, installs, and throws on the first call. smoke-package.sh installs the
+  # built .nupkg into a throwaway project from a local feed and runs a document through it.
+  # ===============================================================================================
+  package:
+    name: package
+    needs: [managed, natives]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # SourceLink and the <repository> element want real history, not a shallow clone.
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSIONS }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: engine
+          path: native
+
+      - name: Pack and prove the packaged shape works
+        run: build/smoke-package.sh --rid linux-x64
+
+      - name: Pack for release
+        run: >
+          dotnet pack src/PrismPdf/PrismPdf.csproj --configuration Release --output artifacts
+          -p:ContinuousIntegrationBuild=true
+
+      - name: Every packaged runtime identifier is present
+        run: |
+          set -euo pipefail
+          nupkg=$(ls artifacts/*.nupkg)
+          echo "$nupkg  ($(du -h "$nupkg" | cut -f1))"
+          for rid in win-x64 win-x86 win-arm64 linux-x64 linux-arm64 linux-arm \
+                     linux-musl-x64 linux-musl-arm64 osx-x64 osx-arm64; do
+            unzip -l "$nupkg" | grep -q "runtimes/$rid/native/" \
+              || { echo "::error::$nupkg is missing runtimes/$rid/native/"; exit 1; }
+          done
+          echo "all ten runtime identifiers present"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: artifacts/*
+          if-no-files-found: error
+
+  # ===============================================================================================
+  # Publish, on a tag only.
+  #
+  # Gated on the `nuget` environment: add required reviewers to it so a push to nuget.org — which
+  # cannot be undone, only delisted — is something a person agrees to rather than something a tag
+  # push causes.
+  #
+  # Authentication is Trusted Publishing: GitHub mints a short-lived OIDC token, nuget.org verifies
+  # it against a policy and exchanges it for an API key valid for one hour. There is no long-lived
+  # key in this repository's secrets to leak, and nothing to rotate every 365 days.
+  #
+  # The policy lives on nuget.org under your username -> Trusted Publishing, and must say:
+  #
+  #     Repository Owner   theunloop
+  #     Repository         prism-pdf-dotnet
+  #     Workflow File      ci.yml          (file name only, no .github/workflows/ prefix)
+  #     Environment        nuget           (must match `environment:` below)
+  #
+  # NUGET_USER is the nuget.org profile name, not an email address. It is a secret only to keep it
+  # out of logs; it is not a credential.
+  #
+  # One gotcha for a private repository: a new policy is *temporarily* active for 7 days, because
+  # nuget.org cannot read the numeric repository and owner IDs it needs to pin the policy against
+  # a delete-and-recreate attack until a real publish supplies them. Publish once inside that
+  # window and the policy becomes permanent; miss it and the policy goes inactive until you
+  # restart the window.
+  # ===============================================================================================
+  publish:
+    name: publish
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [conformance, package]
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      # Without this the OIDC token is never issued and NuGet/login fails with no obvious cause.
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nupkg
+          path: artifacts
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSIONS }}
+
+      - name: The tag matches the package version
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          pkg=$(basename "$(ls artifacts/PrismPdf.*.nupkg)" .nupkg)
+          pkg="${pkg#PrismPdf.}"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag v$tag does not match the packed version $pkg."
+            echo "Bump <Version> in src/PrismPdf/PrismPdf.csproj, then retag."
+            exit 1
+          fi
+          echo "publishing PrismPdf $pkg"
+
+      # Deliberately the last thing before the push: the key lives one hour, and one token buys
+      # exactly one key.
+      - name: Exchange the OIDC token for a short-lived API key
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      # The .snupkg sitting beside the .nupkg is pushed with it automatically.
+      - name: Push to nuget.org
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --source https://api.nuget.org/v3/index.json
+          --api-key "${{ steps.login.outputs.NUGET_API_KEY }}"
+          --skip-duplicate

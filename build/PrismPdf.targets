@@ -1,0 +1,35 @@
+<Project>
+
+  <!--
+    Shipped inside the package at build/PrismPdf.targets, and imported automatically by any project
+    that references PrismPdf.
+
+    Modern .NET needs nothing from this file: the SDK reads runtimes/<rid>/native/ out of the
+    package and records the choice in the application's deps.json, and the loader honours it.
+
+    .NET Framework and some Mono configurations have no deps.json to record anything in, so those
+    assets are simply never unpacked — which is how a package that plainly contains the right
+    binary still fails with DllNotFoundException. Copying the folder to the output directory is
+    what closes that gap: PrismPdf's own resolver probes runtimes/<rid>/native/ beside the
+    assembly, without consulting deps.json (see docs/native-build.md).
+
+    Note that this deliberately does *not* pick a RID at build time. MSBuild would have to guess
+    from PlatformTarget, and AnyCPU — the default — tells it nothing about the bitness the process
+    will actually have. The resolver decides at run time from RuntimeInformation.ProcessArchitecture,
+    which is the only thing that is actually correct for an AnyCPU assembly.
+  -->
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <!--
+      Windows only, because .NET Framework is. Carrying all ten RIDs here would put 44 MB in the
+      output directory of every desktop application to no purpose.
+    -->
+    <None Include="$(MSBuildThisFileDirectory)../runtimes/**/*"
+          Exclude="$(MSBuildThisFileDirectory)../runtimes/linux-*/**/*;$(MSBuildThisFileDirectory)../runtimes/osx-*/**/*">
+      <Link>runtimes/%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+
+</Project>

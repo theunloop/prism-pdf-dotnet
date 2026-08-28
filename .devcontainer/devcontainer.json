@@ -1,0 +1,67 @@
+{
+  "name": "Prism PDF for .NET",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+
+  "features": {
+    // zsh + a non-root `vscode` user.
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "username": "vscode"
+    },
+    // Node is here only to host the two agent CLIs; nothing in this repository needs it.
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // The loader probes this first, so `dotnet test` runs the full suite once
+  // build/build-native.sh has staged the library. See docs/native-build.md.
+  "remoteEnv": {
+    "PRISMPDF_NATIVE_PATH": "${containerWorkspaceFolder}/native/lib"
+  },
+
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // C#: the language service, and the Dev Kit that reads PrismPdf.slnx.
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        // Rust, for working in the prism-pdf checkout beside this repo.
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        // build/gen_native_methods.py.
+        "ms-python.python",
+        // Repository conventions and plumbing.
+        "editorconfig.editorconfig",
+        "github.vscode-github-actions",
+        "eamodio.gitlens",
+        // File icons.
+        "pkief.material-icon-theme"
+      ],
+      "settings": {
+        "workbench.iconTheme": "material-icon-theme",
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "editor.formatOnSave": true,
+        "dotnet.defaultSolution": "PrismPdf.slnx",
+        // The core checkout lives beside this repo; point rust-analyzer at it rather than
+        // letting it scan the whole workspace. Harmless when the checkout is absent.
+        "rust-analyzer.linkedProjects": [
+          "prism-pdf/Cargo.toml"
+        ],
+        "search.exclude": {
+          "**/bin": true,
+          "**/obj": true,
+          "**/target": true
+        }
+      }
+    }
+  },
+
+  "remoteUser": "vscode"
+}

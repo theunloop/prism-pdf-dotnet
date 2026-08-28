@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>PrismPdf.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="4.2.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <PackageReference Include="NUnit.Analyzers" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/PrismPdf/PrismPdf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+
+  <!-- Run the suite against the layout the package actually ships, rather than against a library
+       pointed at by an environment variable. build/fetch-natives.sh stages native/runtimes/, this
+       copies it beside the test assembly as runtimes/<rid>/native/, and the resolver then picks a
+       RID exactly as it will for a consumer. PRISMPDF_NATIVE_PATH still overrides, which is what a
+       from-source build/build-native.sh run uses. -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)../../native/runtimes/**/*"
+          Link="runtimes/%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+</Project>

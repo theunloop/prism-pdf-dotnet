@@ -1,0 +1,29 @@
+# --- .NET ---
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+TestResults/
+artifacts/
+
+# --- Native build output ---
+# Produced by build/build-native.sh from the prism-pdf checkout; never committed.
+runtimes/
+native/lib/
+
+# --- The upstream core checkout ---
+# A local reference clone of https://github.com/theunloop/prism-pdf.git, used to
+# build the native library and to run the shared corpus. It is NOT part of this repo:
+# see docs/native-build.md for how to obtain it.
+/prism-pdf/
+
+# --- macOS ---
+.DS_Store
+
+# --- Fetched native artifacts ---
+# Staged by build/fetch-natives.sh from the core's published release; verified, never committed.
+native/runtimes/
+native/corpus/
+native/test-signer/

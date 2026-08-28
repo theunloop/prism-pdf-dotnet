@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>PrismPdf</RootNamespace>
+    <AssemblyName>PrismPdf</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>PrismPdf</PackageId>
+    <Version>0.1.0-alpha</Version>
+    <Description>
+      .NET binding for the Prism PDF engine — read, manipulate, and secure PDF files through the
+      stable Prism PDF C ABI (pdf-ffi).
+    </Description>
+    <PackageTags>pdf;prismpdf;ffi;interop;native</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <!-- netstandard2.0 predates Span<T> and the init-only/record plumbing the idiomatic layer
+       uses. System.Memory supplies the former; src/PrismPdf/Compat/ supplies the latter. -->
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PrismPdf.Tests" />
+  </ItemGroup>
+
+  <!-- ===========================================================================================
+       The native payload.
+
+       One package carries every platform. NuGet downloads a package whole regardless, so splitting
+       per RID would not save a consumer a single byte of transfer; it would only make them name
+       their platform in a PackageReference. The cost of one package is output size on a non-RID
+       build, and at ~44 MB that is well within what a native package normally weighs.
+
+       The binaries are not committed. build/fetch-natives.sh downloads them for the pinned core
+       release and verifies every checksum — see native/VENDORED.md.
+       =========================================================================================== -->
+
+  <PropertyGroup>
+    <PrismPdfNativeDir>$(MSBuildThisFileDirectory)../../native/runtimes/</PrismPdfNativeDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- native/runtimes/<rid>/native/<lib>  ->  runtimes/<rid>/native/<lib> in the package. -->
+    <None Include="$(PrismPdfNativeDir)**/*" Pack="true" Visible="false"
+          PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)../../build/PrismPdf.targets" Pack="true"
+          PackagePath="build/" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)../../README.md" Pack="true" PackagePath="/"
+          Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)../../LICENSE.md" Pack="true" PackagePath="/"
+          Visible="false" />
+  </ItemGroup>
+
+  <!-- A package that quietly ships without its engine is the exact failure this repository set out
+       to fix: it installs, it restores, and it throws DllNotFoundException on the consumer's first
+       call. Refuse to produce one. -->
+  <Target Name="PrismPdfRequireNatives" BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <_PrismPdfStaged Include="$(PrismPdfNativeDir)**/*" />
+    </ItemGroup>
+    <Error Condition="'@(_PrismPdfStaged)' == ''"
+           Text="No native libraries staged in native/runtimes/, so this package would install and then fail at run time. Run build/fetch-natives.sh first (see native/VENDORED.md)." />
+  </Target>
+
+</Project>
