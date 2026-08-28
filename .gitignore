@@ -19,6 +19,10 @@ native/lib/
 # see docs/native-build.md for how to obtain it.
 /prism-pdf/
 
+# --- Agent tooling ---
+# Machine-local permission grants; personal to one checkout.
+.claude/settings.local.json
+
 # --- macOS ---
 .DS_Store
 

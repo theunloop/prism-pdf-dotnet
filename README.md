@@ -152,11 +152,12 @@ The authorities this SDK is written against, in order, are in the core repo:
 ## Repository layout
 
 ```
-build/          build-native.sh, and the raw-layer generator
+build/          fetch-natives.sh, build-native.sh, the raw-layer generator, the package smoke test
 docs/           this SDK's documentation
 native/
   include/      the vendored prismpdf.h (committed; never hand-edited)
-  VENDORED.md   which core release it came from, and how to update
+  VENDORED.md   which core release it came from, its checksums, and how to update
+  runtimes/     the fetched engine, one library per RID (not committed)
 src/PrismPdf/
   Interop/      the raw layer — generated P/Invoke, and the loader
   Collections/  owned lists and the borrowed items lent from them
@@ -167,12 +168,22 @@ tests/          the conformance suite
 
 ## Contributing
 
-Read [`docs/architecture.md`](docs/architecture.md) first — particularly the rule that
-`Interop/NativeMethods.cs` is **generated, not written**. After vendoring a newer header, run
-`python3 build/gen_native_methods.py` and review the diff.
+[`CONTRIBUTING.md`](CONTRIBUTING.md) — start there, because the first question is usually *which
+repository*: nothing here parses a PDF, so anything about parsing, fonts, crypto or layout belongs
+upstream in the engine.
+
+The rule most likely to catch you out is that `Interop/NativeMethods.cs` is **generated, not
+written** — see [`docs/architecture.md`](docs/architecture.md). CI fails if it and the vendored
+header disagree.
 
 Anything the core's binding author's guide got wrong or left ambiguous should be fed back into that
 file upstream, as its own final checklist item asks.
+
+## Security
+
+Please do not open a public issue for a security problem. [`SECURITY.md`](SECURITY.md) explains
+how to report one privately, and which of the two repositories a given class of issue belongs to —
+most PDF-parsing vulnerabilities are the engine's, and fixing them there fixes every binding.
 
 ## License
 

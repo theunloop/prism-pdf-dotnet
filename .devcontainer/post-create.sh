@@ -12,11 +12,15 @@ REPO_ROOT="$PWD"
 echo "==> restoring and building the managed projects"
 dotnet restore && dotnet build --configuration Release
 
-echo
-echo "==> installing the agent CLIs"
-# Claude Code and Codex. Pinned to the registry's latest; both self-update thereafter.
-npm install -g @anthropic-ai/claude-code @openai/codex \
-  || echo "warning: the agent CLIs did not install. Re-run: npm install -g @anthropic-ai/claude-code @openai/codex"
+# Opt-in, not imposed: a contributor's container should not acquire someone else's tooling by
+# default. Set PRISMPDF_DEVCONTAINER_AGENTS=1 in devcontainer.json's containerEnv, or just run the
+# npm install below by hand.
+if [[ "${PRISMPDF_DEVCONTAINER_AGENTS:-0}" == "1" ]]; then
+  echo
+  echo "==> installing the agent CLIs"
+  npm install -g @anthropic-ai/claude-code @openai/codex \
+    || echo "warning: the agent CLIs did not install."
+fi
 
 echo
 # The engine is downloaded, not built: the core publishes a library per platform on every tag. That
@@ -50,8 +54,6 @@ cat <<'MSG'
     dotnet test                                              # the full suite
     dotnet test --filter "FullyQualifiedName~CompatTests"     # no native library needed
     python3 build/gen_native_methods.py --check               # the raw layer is not stale
-
-    claude          # first run prompts for authentication
-    codex           # likewise
+    build/fetch-natives.sh --corpus                           # re-fetch the engine
 
 MSG
