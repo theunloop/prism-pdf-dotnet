@@ -4,10 +4,11 @@ A C# SDK for [Prism PDF](https://github.com/theunloop/prism-pdf) — a pure-Rust
 manipulates, and generates PDFs. This repository is the **.NET binding**: it consumes Prism PDF's
 stable C ABI (`pdf-ffi`) and projects it into an idiomatic .NET API.
 
-> **Status: early.** The read, manipulate, and security surfaces are implemented and covered by
-> the conformance suite. Authoring (`Builder`), layout (`Flow`), and declarative composition are
-> **not bound yet** — see [`docs/roadmap.md`](docs/roadmap.md) for the order they land in and
-> [`native/VENDORED.md`](native/VENDORED.md) for the exact core release this is pinned to.
+> **Status: complete surface, no release yet.** All 386 exports of the pinned C ABI are bound and
+> covered by the conformance suite — reading, manipulation, security, authoring, layout,
+> declarative composition, PDF/A and PDF/UA production, and the COS escape hatch. Nothing has been
+> published to NuGet yet. [`native/VENDORED.md`](native/VENDORED.md) records the exact core release
+> this is pinned to.
 
 ```csharp
 using PrismPdf;
@@ -84,14 +85,30 @@ Full detail, including the package layout and how the loader probes:
 | **Transform reports** — rewrite mode, signature and structure effects | ✅ | `…WithReport` companions |
 | **Encrypt** — RC4/AES-128/AES-256/AES-256-GCM, permissions, public-key, PDF MAC | ✅ | `Document.SaveEncrypted*`, `Permissions` |
 | **Sign & verify** — detached CMS, PAdES, timestamps, LTV verification | ✅ | `Document.Sign`, `.VerifySignatures*`, `SignSettings` |
-| **Author** — `Builder`, content streams, structure tree | ⬜ Planned | — |
-| **Layout** — `Flow`, `Table`, `TextBlock` | ⬜ Planned | — |
-| **Compose** — declarative `Composition` | ⬜ Planned | — |
-| **PDF/A & PDF/UA conformance production** | ⬜ Planned | — |
-| **COS inspection & editing** | ⬜ Planned | — |
+| **Author** — content streams, pages, structure tree, links, attachments | ✅ | `Content`, `Builder`, `PageSpec`, `StructNode`, `ImageSource` |
+| **Layout** — flowed text, headings, lists, tables, figures, measurement | ✅ | `Flow`, `Table`, `TextBlock` |
+| **Compose** — declarative boxes, paginating tables, running furniture | ✅ | `Composition`, `CompositionContainer` |
+| **PDF/A & PDF/UA conformance production** | ✅ | `Builder.MakePdfA`, `.MakePdfUa`, `XmpMetadata` |
+| **COS inspection & editing** | ✅ | `Document.CatalogObject()`, `PdfObject`, `Edit` |
 
-The suite prints the exact coverage gap against the vendored header on every run — see
-`NativeSurfaceTests.CoverageGap_IsReported`.
+The suite prints the exact coverage against the vendored header on every run — see
+`NativeSurfaceTests.CoverageGap_IsReported`, which is more authoritative than this table.
+
+### What is missing is missing upstream
+
+Every export the C ABI offers is bound, so the remaining gaps are the engine's, not this
+binding's. The core's `docs/ABI.md` lists them under "Not yet crossing": namespace role maps, the
+rest of `Builder` (form XObjects, `embed_cid_font`, colour-space constructors, page labels,
+document parts, developer extensions), bulk COS enumeration, font helpers (`subset_sfnt`,
+`glyphs_for_text`, `shape_text`), name trees, and writing DSS validation material. No binding can
+expose those until the ABI does, and adding them starts in the engine repository.
+
+Two are visible from here as holes in otherwise complete areas: `Content.ShowGlyphs` addresses a
+CID font that only `Flow.EmbedFont` can embed, and `Content.SetFillColorSpace` names a colour space
+that only `builder_add_separation` — which does not cross — could have added.
+
+Page **rendering** (§10–§11) is deliberately out of scope for the engine's v1 line and will not
+appear here.
 
 ## Examples
 
@@ -132,6 +149,63 @@ if (report.SignatureEffect is SignatureEffect.Invalidated)
 }
 ```
 
+**Pour a document rather than drawing one.**
+
+```csharp
+using var flow = new Flow(PdfSize.A4, PdfMargins.Uniform(72),
+    new Dictionary<string, StdFont> { ["F1"] = StdFont.Helvetica });
+using var body = new TextBlock("F1", "Helvetica", 11, 14);
+
+flow.SetTagged("en-GB");                       // emit a structure tree as it goes
+flow.AddHeading(1, body, "Quarterly report");
+flow.AddText(body, longProse);                 // wraps, and breaks pages on its own
+
+File.WriteAllBytes("report.pdf", flow.Build());
+```
+
+**Describe a layout and let the engine paginate it.**
+
+```csharp
+using var composition = new Composition { TaggedLanguage = "en-GB" };
+using var page = composition.AddPage(PdfSize.A4, PdfMargins.Uniform(48));
+using var table = page.SetTable();
+
+table.AddRelativeColumn(3);
+table.AddFixedColumn(80);
+
+using (var header = table.SetHeader())
+{
+    foreach (var caption in new[] { "Description", "Amount" })
+    {
+        using var cell = header.AddCell();
+        cell.SetText(caption, 10, 13);
+    }
+}
+// … rows … the table breaks across pages and repeats its header on each fragment.
+
+File.WriteAllBytes("invoice.pdf", composition.Build());
+```
+
+**Ask why a conformance pass refused.**
+
+```csharp
+try
+{
+    builder.MakePdfA(PdfAConformance.A2b, metadata);
+}
+catch (PrismPdfConformanceException ex) when (ex.Issue is ConformanceIssue.UnembeddedFont)
+{
+    // Not "conformance failed" — a font is not embedded, and that is fixable.
+}
+```
+
+**Read a key nothing else exposes.**
+
+```csharp
+using var catalog = doc.CatalogObject();
+using var names = catalog.DictionaryGet("Names");   // null when absent, not an error
+```
+
 ## Documentation
 
 | | |
@@ -143,7 +217,6 @@ if (report.SignatureEffect is SignatureEffect.Invalidated)
 | [Ownership & lifetimes](docs/ownership.md) | Owned vs borrowed, disposal, consuming calls, threading |
 | [Building the native library](docs/native-build.md) | Toolchain, platforms, how the loader probes |
 | [Conformance suite](docs/conformance-suite.md) | The journeys every binding ports, and their status here |
-| [Roadmap](docs/roadmap.md) | What is unbound, in the order it lands |
 
 The authorities this SDK is written against, in order, are in the core repo:
 `crates/pdf-ffi/include/prismpdf.h` (each function's exact ownership contract), `docs/ABI.md`, and

@@ -75,7 +75,7 @@ pins `CallingConvention.Cdecl` and `ExactSpelling`; `NativeSurfaceTests` enforce
 
 | Contract | Enforced in |
 |---|---|
-| One exception type carrying the stable status | `PrismPdfException.Create` |
+| One exception type carrying the stable status | `PrismPdfException.Create`; `Conformance` alone subclasses it as `PrismPdfConformanceException` |
 | `NotFound` on an optional getter is *absence* (`null`), on an index it is an error | `Native.CheckOptional` |
 | Consuming calls invalidate on success only | `PrismPdfHandle.MarkConsumed` |
 | Borrowed items keep their owning list alive, and raise once it is disposed | `BorrowedItem` (`Collections/NativeList.cs`) |
@@ -96,9 +96,19 @@ forever and must not be freed.
 - **`…WithReport` companions, not optional parameters** (`Save()` / `SaveWithReport()`).
 - **Flattened ABI enums stay flattened** (e.g. `builder_add_link_uri` vs `_add_link_page`) even
   though C# could express them as a discriminated shape.
-- Naming follows the guide's ten rules mechanically; the three forced deviations (statics on `Pdf`
-  not `PrismPdf`, `PrismPdfStatus` keeps its prefix, `PdfDate`/`OpenOptions` reshape C structs) are
-  recorded in `docs/naming.md`. Record any new deviation there.
+- **Consuming calls come in three shapes, not one.** `builder_add_page_spec` and
+  `struct_node_add_child` invalidate on success only (semantic contract 3, `MarkTransferred()`);
+  `flow_build` and `flow_into_builder` consume *unconditionally*, so `Flow` marks itself consumed
+  before the call; `composition_build` finalises without consuming, so the handle is still yours to
+  dispose. Read the export's header comment before assuming the contract.
+- **Composition generations are not mirrored in managed state.** A spent `CompositionContainer`
+  reports `InvalidUse` from the engine, not `ObjectDisposedException` from here — see
+  `docs/ownership.md`.
+- Naming follows the guide's ten rules mechanically; the five forced deviations (statics on `Pdf`
+  not `PrismPdf`, `PrismPdfStatus` keeps its prefix, `PdfDate`/`OpenOptions` reshape C structs,
+  `PdfObject` cannot be `Object` and the flow's appending verbs take an `Add` prefix,
+  `PrismPdfConformanceException` subclasses the one error type) are recorded in `docs/naming.md`.
+  Record any new deviation there.
 
 ### netstandard2.0 is load-bearing
 
@@ -162,7 +172,12 @@ lenient*. Two files in `malformed/` open in `Strict` mode for that reason — se
 `docs/conformance-suite.md`.
 
 `VerticalSliceTests`, `ParseJourneyTests`, `ManipulateJourneyTests`, `SecurityJourneyTests`,
-`FailurePathTests` are the ported journeys; `NativeSurfaceTests` is the raw-layer completeness check
-and *prints* the coverage gap against the header (unbound exports are a roadmap item, not a
-failure), so it is more authoritative than `docs/roadmap.md`. The create and compose journeys are
-blocked until `Builder` and `Composition` are bound.
+`CreateJourneyTests`, `ComposeJourneyTests`, `CompositionTests`, `ConformanceJourneyTests`,
+`CosJourneyTests` and `FailurePathTests` are the ported journeys — `CompositionTests` carries the
+anchor acceptance test, the port of the core's `compose_invoice.c`. `ContentStreamTests` asserts on
+the operator bytes directly, because a content stream owns no document to reopen.
+`NativeSurfaceTests` is the raw-layer completeness check and *prints* the coverage against the
+header, which is the authority on what is bound — every export currently is.
+
+One test skips by default: the PDF/UA success path needs an sfnt font program, which the shared
+corpus does not ship. `PRISMPDF_TEST_FONT=/path/to/font.ttf dotnet test` runs it.

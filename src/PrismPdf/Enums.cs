@@ -3,8 +3,7 @@
 // Never renumber; the C values are the contract."
 //
 // Every value is written out explicitly so that a diff against a newer header is a diff of
-// numbers, not of ordering. Enums belonging to areas this SDK does not bind yet (authoring,
-// layout, composition, conformance, COS inspection) are deliberately absent — see docs/roadmap.md.
+// numbers, not of ordering. Every #[repr(C)] enum in the vendored header is projected here.
 
 namespace PrismPdf;
 
@@ -193,4 +192,295 @@ public enum EncryptionAlgorithm
 
     /// <summary>AES-256 in GCM mode — authenticated encryption.</summary>
     Aes256Gcm = 3,
+}
+
+/// <summary>
+/// One of the fourteen Standard-14 fonts (§9.6.2.2) a page may name in its resources without
+/// embedding anything.
+/// </summary>
+/// <remarks>
+/// These are only for drafts and PDF/A-exempt output: PDF/A and PDF/UA both require every font to
+/// be embedded, so a document destined for either must use an embedded font instead.
+/// </remarks>
+public enum StdFont
+{
+    /// <summary>Helvetica.</summary>
+    Helvetica = 0,
+
+    /// <summary>Helvetica Bold.</summary>
+    HelveticaBold = 1,
+
+    /// <summary>Helvetica Oblique.</summary>
+    HelveticaOblique = 2,
+
+    /// <summary>Helvetica Bold Oblique.</summary>
+    HelveticaBoldOblique = 3,
+
+    /// <summary>Times Roman.</summary>
+    TimesRoman = 4,
+
+    /// <summary>Times Bold.</summary>
+    TimesBold = 5,
+
+    /// <summary>Times Italic.</summary>
+    TimesItalic = 6,
+
+    /// <summary>Times Bold Italic.</summary>
+    TimesBoldItalic = 7,
+
+    /// <summary>Courier.</summary>
+    Courier = 8,
+
+    /// <summary>Courier Bold.</summary>
+    CourierBold = 9,
+
+    /// <summary>Courier Oblique.</summary>
+    CourierOblique = 10,
+
+    /// <summary>Courier Bold Oblique.</summary>
+    CourierBoldOblique = 11,
+
+    /// <summary>Symbol.</summary>
+    Symbol = 12,
+
+    /// <summary>Zapf Dingbats.</summary>
+    ZapfDingbats = 13,
+}
+
+/// <summary>Horizontal alignment of a text block (§9.4.3).</summary>
+public enum Align
+{
+    /// <summary>Ragged right.</summary>
+    Left = 0,
+
+    /// <summary>Centred.</summary>
+    Center = 1,
+
+    /// <summary>Ragged left.</summary>
+    Right = 2,
+
+    /// <summary>Flush both margins.</summary>
+    Justify = 3,
+}
+
+/// <summary>How list items are marked.</summary>
+public enum ListStyle
+{
+    /// <summary>A bullet before each item.</summary>
+    Bullet = 0,
+
+    /// <summary>An incrementing number before each item.</summary>
+    Numbered = 1,
+}
+
+/// <summary>
+/// Logical structure roles without associated string or numeric data (§14.7–§14.8), as declarative
+/// composition names them.
+/// </summary>
+public enum CompositionSemantic
+{
+    /// <summary>A paragraph (<c>P</c>).</summary>
+    Paragraph = 0,
+
+    /// <summary>A list (<c>L</c>).</summary>
+    List = 1,
+
+    /// <summary>A list item (<c>LI</c>).</summary>
+    ListItem = 2,
+
+    /// <summary>A list item's label (<c>Lbl</c>).</summary>
+    ListLabel = 3,
+
+    /// <summary>A list item's body (<c>LBody</c>).</summary>
+    ListBody = 4,
+
+    /// <summary>A table (<c>Table</c>).</summary>
+    Table = 5,
+
+    /// <summary>A table row (<c>TR</c>).</summary>
+    TableRow = 6,
+
+    /// <summary>A table header cell (<c>TH</c>).</summary>
+    TableHeaderCell = 7,
+
+    /// <summary>A table data cell (<c>TD</c>).</summary>
+    TableCell = 8,
+}
+
+/// <summary>Image scaling policy inside the requested composition box (§8.9).</summary>
+public enum CompositionImageSizing
+{
+    /// <summary>Scale down to fit inside the box, preserving aspect ratio.</summary>
+    Fit = 0,
+
+    /// <summary>Cover the box, preserving aspect ratio; overflow is clipped.</summary>
+    Fill = 1,
+
+    /// <summary>Use the box exactly, whatever that does to the aspect ratio.</summary>
+    Exact = 2,
+}
+
+/// <summary>Horizontal alignment inside a constrained composition box.</summary>
+public enum CompositionHorizontalAlign
+{
+    /// <summary>Against the left edge.</summary>
+    Left = 0,
+
+    /// <summary>Centred horizontally.</summary>
+    Center = 1,
+
+    /// <summary>Against the right edge.</summary>
+    Right = 2,
+}
+
+/// <summary>Vertical alignment inside a constrained composition box.</summary>
+public enum CompositionVerticalAlign
+{
+    /// <summary>Against the top edge.</summary>
+    Top = 0,
+
+    /// <summary>Centred vertically.</summary>
+    Center = 1,
+
+    /// <summary>Against the bottom edge.</summary>
+    Bottom = 2,
+}
+
+/// <summary>
+/// A PDF/A conformance level (§14, ISO 19005). Part and level together: <c>A2u</c> is part 2,
+/// level U.
+/// </summary>
+public enum PdfAConformance
+{
+    /// <summary>PDF/A-1b — basic, ISO 19005-1.</summary>
+    A1b = 0,
+
+    /// <summary>PDF/A-1a — accessible (requires tagging).</summary>
+    A1a = 1,
+
+    /// <summary>PDF/A-2b — basic, ISO 19005-2.</summary>
+    A2b = 2,
+
+    /// <summary>PDF/A-2u — basic plus Unicode mapping.</summary>
+    A2u = 3,
+
+    /// <summary>PDF/A-2a — accessible.</summary>
+    A2a = 4,
+
+    /// <summary>PDF/A-3b — basic, permits attachments.</summary>
+    A3b = 5,
+
+    /// <summary>PDF/A-3u — plus Unicode mapping.</summary>
+    A3u = 6,
+
+    /// <summary>PDF/A-3a — accessible.</summary>
+    A3a = 7,
+
+    /// <summary>PDF/A-4 — ISO 19005-4, on PDF 2.0.</summary>
+    A4 = 8,
+
+    /// <summary>PDF/A-4e — engineering.</summary>
+    A4e = 9,
+
+    /// <summary>PDF/A-4f — permits attachments.</summary>
+    A4f = 10,
+}
+
+/// <summary>
+/// Why a conformance pass refused the document — the payload of
+/// <see cref="PrismPdfConformanceException"/>.
+/// </summary>
+public enum ConformanceIssue
+{
+    /// <summary>
+    /// A font is not embedded (PDF/A §6.3.4, PDF/UA §7.21.4.1). Standard-14 fonts are rejected:
+    /// embed a real program.
+    /// </summary>
+    UnembeddedFont = 0,
+
+    /// <summary>The document has attachments, which only PDF/A-3 and PDF/A-4f permit (§6.8).</summary>
+    AttachmentRequiresPdfA3 = 1,
+
+    /// <summary>Level A conformance requires logical structure — the document is untagged (§6.9).</summary>
+    LevelARequiresTagging = 2,
+
+    /// <summary>The content uses transparency, which PDF/A-1 forbids (§6.4).</summary>
+    TransparencyRequiresPdfA2 = 3,
+
+    /// <summary>PDF/UA requires a tagged document (14289-1 §7.1).</summary>
+    NotTagged = 4,
+
+    /// <summary>PDF/UA requires a document title (14289-1 §7.1, with <c>/DisplayDocTitle</c>).</summary>
+    MissingTitle = 5,
+
+    /// <summary>PDF/UA requires a natural language (<c>/Lang</c>, 14289-1 §7.2).</summary>
+    MissingLanguage = 6,
+
+    /// <summary>A figure has no alternative description (14289-1 §7.3).</summary>
+    FigureWithoutAlt = 7,
+
+    /// <summary>PDF/UA-2 forbids <c>Note</c>; use <c>FENote</c> (14289-2 §8.2.5.14).</summary>
+    NoteForbidden = 8,
+
+    /// <summary>PDF/UA-2 forbids the generic <c>H</c> heading (14289-2 §8.2.5.12).</summary>
+    GenericHeadingForbidden = 9,
+
+    /// <summary>An embedded file has no description (14289-2 §8.14.1).</summary>
+    AttachmentWithoutDesc = 10,
+
+    /// <summary>A link has no structure destination (14289-2 §8.9.2).</summary>
+    LinkWithoutStructureDest = 11,
+
+    /// <summary>A structure element uses a type outside the declared namespace.</summary>
+    UnknownStructureType = 12,
+
+    /// <summary>The content references the <c>.notdef</c> glyph (14289-1 §7.21.4.2).</summary>
+    NotdefGlyph = 13,
+}
+
+/// <summary>The exact COS variant stored in a <see cref="PdfObject"/> (§7.3.2–§7.3.10).</summary>
+public enum ObjectKind
+{
+    /// <summary>The null object (§7.3.9).</summary>
+    Null = 0,
+
+    /// <summary>A boolean (§7.3.2).</summary>
+    Boolean = 1,
+
+    /// <summary>An integer (§7.3.3).</summary>
+    Integer = 2,
+
+    /// <summary>A real number (§7.3.3).</summary>
+    Real = 3,
+
+    /// <summary>A string (§7.3.4) — bytes, not text.</summary>
+    String = 4,
+
+    /// <summary>A name (§7.3.5).</summary>
+    Name = 5,
+
+    /// <summary>An array (§7.3.6).</summary>
+    Array = 6,
+
+    /// <summary>A dictionary (§7.3.7).</summary>
+    Dictionary = 7,
+
+    /// <summary>A stream (§7.3.8) — a dictionary plus encoded bytes.</summary>
+    Stream = 8,
+
+    /// <summary>An indirect reference (§7.3.10).</summary>
+    Reference = 9,
+}
+
+/// <summary>How an object-edit transaction is committed (§7.5–§7.5.6).</summary>
+public enum EditCommitMode
+{
+    /// <summary>
+    /// Append a new revision while retaining every original byte — which is what keeps an existing
+    /// signature's byte range intact.
+    /// </summary>
+    Incremental = 0,
+
+    /// <summary>Re-emit the live object graph as one normalized revision.</summary>
+    FullRewrite = 1,
 }

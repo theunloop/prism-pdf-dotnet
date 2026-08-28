@@ -101,7 +101,7 @@ deliberately omits them: a netstandard2.0 assembly cannot load them — .NET for
 `net8.0-android` target framework — so packaging them would add 12 MB nothing can reach. Add them
 when that target is added, not before. The Apple platforms are static slices in
 `PrismPDF.xcframework` and need a different mechanism again (`DllImport("__Internal")` and
-multi-targeting); see `docs/roadmap.md`.
+multi-targeting), which is a separate milestone rather than a packaging flag.
 
-Header exports at this version: **386**. Bound by this SDK: see
-`build/gen_native_methods.py` and the coverage report `NativeSurfaceTests` prints.
+Header exports at this version: **386**, all of them bound. `NativeSurfaceTests` prints the
+coverage on every run; a newly vendored header that adds exports will show up there as a gap.

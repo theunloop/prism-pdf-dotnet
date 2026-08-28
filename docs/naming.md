@@ -44,7 +44,13 @@ plain `bool`.
 
 **6. Handle-less functions become statics on the top-level class.**
 
-`prismpdf_version` → `Pdf.Version`; `prismpdf_merge` → `Pdf.Merge(...)`.
+`prismpdf_version` → `Pdf.Version`; `prismpdf_merge` → `Pdf.Merge(...)`; the three PDF/A level
+helpers → `Pdf.PdfAPart`, `Pdf.PdfAAllowsAttachments`, `Pdf.PdfACode`.
+
+> **Where rule 6 and rule 2 collide.** `prismpdf_measure_text` and `prismpdf_wrap_text` read like
+> module-level functions — but their first parameter is a
+> `PrismPdfTextBlock` handle, so rule 2 governs and they are `block.MeasureText(text)` and
+> `block.WrapText(text, width)`. The signature decides, not the name.
 
 **7. `*_report` variants get a `…WithReport` companion, never an optional parameter.**
 
@@ -72,7 +78,7 @@ numbers, not of ordering.
 
 ## Deviations
 
-Three, each forced by C# rather than chosen.
+Five, each forced by C# rather than chosen.
 
 ### 1. The top-level class is `Pdf`, not `PrismPdf`
 
@@ -102,6 +108,31 @@ freeze that layout into this SDK's compatibility surface for no benefit — and 
 case, `PdfDate` can express "this date declares no relationship to UTC" as `int? UtcOffsetMinutes`,
 which is what §7.9.4 actually means and what a `bool` + `short` pair only encodes.
 
+### 4. `PrismPdfObject` becomes `PdfObject`, and the flow's verbs take an `Add` prefix
+
+Two names the mechanical mapping produces do not survive contact with C#.
+
+`prismpdf_object_*` would give a type called `Object`, which cannot coexist with `System.Object` in
+a language where every type derives from it. It is `PdfObject`, the same reshaping `PdfDate` gets.
+
+`prismpdf_flow_table` would give `flow.Table(table)` — a method whose name is also the name of its
+parameter's type, which is legal C# and reads as a mistake. Once that one has to change, the whole
+family changes with it, because `flow.Text(...)` beside `flow.AddTable(...)` is worse than either
+convention applied consistently. So every flow call that *appends* content takes an `Add` prefix:
+`AddText`, `AddHeading`, `AddList`, `AddTable`, `AddImage`, `AddFigure`, `AddNote`, `AddFormula`,
+`AddSpace`. Calls that *set* document-level state keep their names: `SetHeader`, `SetFooter`,
+`SetTagged`, `SetInfo`.
+
+The same `Set…`/`Add…` split is load-bearing in `CompositionContainer`, where it is not cosmetic:
+`Set…` fills a slot and spends the handle, `Add…` appends to a container and does not.
+
+### 5. `PrismPdfConformanceException` subclasses the one error type
+
+Semantic contract 1 asks for one error type. `PrismPdfStatus.Conformance` is the one status that
+carries a second value — *which* rule was unmet — so it arrives as a subclass carrying a
+`ConformanceIssue` rather than losing that value or bolting a nullable field onto every exception.
+`catch (PrismPdfException)` still catches everything, which is what the contract is for.
+
 ## Additions
 
 Two conveniences that are *not* ABI entry points, both documented as such in their XML docs:
@@ -110,5 +141,10 @@ Two conveniences that are *not* ABI entry points, both documented as such in the
 |---|---|
 | `Document.OpenFile(path)` | `File.ReadAllBytes` + `Document.Open`. The engine only ever opens from memory. |
 | `EncryptionAlgorithm` | A C# enum over the plain `uint32_t` the `SaveEncrypted…` family takes. The values are the ones `docs/ABI.md` defines; the ABI has no `#[repr(C)]` enum here. |
+| `PdfSize`, `PdfMargins` | The `const double *` pairs `flow_new` and the page styles take, as record structs — the same reshaping `PdfRect` already applies to a four-double rectangle. |
+| `PdfColor` | The three-double `PrismPdfCompositionColor`, kept out of the public API as a layout the way `PdfDate` keeps `PrismPdfDate` out. |
+| `PdfReference` | An object number and generation, which the ABI passes side by side everywhere they appear. |
+| `XmpMetadata.SetDates` | `CreateDate` and `ModifyDate` formatted from a `DateTimeOffset`, since the ABI takes the ISO 8601 strings XMP itself uses. |
+| `PdfObject.Text` | A string or name decoded as text — UTF-16BE with a byte-order mark, UTF-8 otherwise. `Bytes` remains the literal answer. |
 
 Neither invents a noun the ABI lacks, which is the line the guide draws.

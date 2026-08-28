@@ -269,3 +269,54 @@ internal sealed unsafe class NativeUtf8Array : IDisposable
         Pointers = null;
     }
 }
+
+/// <summary>
+/// A scope owning several NUL-terminated UTF-8 copies for the duration of one native call.
+/// </summary>
+/// <remarks>
+/// <see cref="Native.AllocUtf8"/> plus a <c>try</c>/<c>finally</c> says this for one string. The
+/// authoring calls take up to five at once — <c>attach_file</c> has a name, a MIME type, a
+/// relationship and an optional description — and nesting four <c>finally</c> blocks around one
+/// call obscures the call. Nothing here is library memory: every pointer comes from
+/// <see cref="Native.AllocUtf8"/> and goes back to <see cref="Native.FreeUtf8"/>.
+/// </remarks>
+internal sealed unsafe class Utf8Scope : IDisposable
+{
+    private readonly List<nint> _allocated = [];
+
+    /// <summary>Copy a required string; a null one is an <see cref="ArgumentNullException"/>.</summary>
+    internal byte* Add(string value, string parameterName)
+    {
+        if (value is null)
+        {
+            throw new ArgumentNullException(parameterName);
+        }
+
+        var text = Native.AllocUtf8(value);
+        _allocated.Add((nint)text);
+        return text;
+    }
+
+    /// <summary>Copy an optional string; a null one crosses as a null pointer, as the ABI expects.</summary>
+    internal byte* AddOptional(string? value)
+    {
+        if (value is null)
+        {
+            return null;
+        }
+
+        var text = Native.AllocUtf8(value);
+        _allocated.Add((nint)text);
+        return text;
+    }
+
+    public void Dispose()
+    {
+        foreach (var pointer in _allocated)
+        {
+            Native.FreeUtf8((byte*)pointer);
+        }
+
+        _allocated.Clear();
+    }
+}

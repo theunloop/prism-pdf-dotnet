@@ -36,6 +36,34 @@ messages are diagnostics and may change.
 | `InvalidUse` | A handle is stale, its owner was released, or it was already finalised. |
 | `Layout` | Composition rejected geometry or could not paginate. |
 
+## `Conformance` carries a second value
+
+One status is not actionable on its own. When a PDF/A or PDF/UA pass refuses a document, the ABI
+also reports *which* rule was unmet, so that arrives as `PrismPdfConformanceException` — a subclass,
+so `catch (PrismPdfException)` still catches it:
+
+```csharp
+try
+{
+    builder.MakePdfUa(metadata, "en-GB");
+}
+catch (PrismPdfConformanceException ex)
+{
+    // FigureWithoutAlt, NotTagged, MissingTitle, UnembeddedFont, NoteForbidden, …
+    logger.LogWarning("not PDF/UA: {Issue}", ex.Issue);
+}
+```
+
+It is the only subclass, and the only status that has one: everything else fits in
+`Status` plus a message.
+
+## `InvalidUse` is often a spent composition handle
+
+Outside composition, `InvalidUse` means a stale handle. Inside it, it usually means a slot was
+filled twice: a `CompositionContainer` addresses one slot, and filling it advances that slot's
+generation. This is reported by the engine rather than by managed code — see
+[ownership.md](ownership.md).
+
 ## `NotFound` is two different things
 
 This is the single most important distinction in the ABI, and the SDK draws it for you:

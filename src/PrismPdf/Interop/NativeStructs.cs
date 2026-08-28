@@ -42,3 +42,41 @@ internal struct PrismPdfLimits
     internal nuint MaxObjstmObjects;
     internal nuint MaxObjects;
 }
+
+/// <summary>
+/// Page geometry for declarative composition, in PDF points. Reshaped publicly as
+/// <see cref="PrismPdf.PdfSize"/> plus <see cref="PrismPdf.PdfMargins"/>.
+/// </summary>
+[StructLayout(LayoutKind.Sequential)]
+internal struct PrismPdfCompositionPageStyle
+{
+    internal double Width;
+    internal double Height;
+    internal double MarginLeft;
+    internal double MarginRight;
+    internal double MarginTop;
+    internal double MarginBottom;
+}
+
+/// <summary>
+/// An RGB colour for declarative composition; every component is in the inclusive range 0–1.
+/// Reshaped publicly as <see cref="PrismPdf.PdfColor"/>.
+/// </summary>
+[StructLayout(LayoutKind.Sequential)]
+internal struct PrismPdfCompositionColor
+{
+    internal double Red;
+    internal double Green;
+    internal double Blue;
+}
+
+/// <summary>
+/// Text styling for declarative composition. The idiomatic layer takes the two values as
+/// parameters rather than exposing this layout.
+/// </summary>
+[StructLayout(LayoutKind.Sequential)]
+internal struct PrismPdfCompositionTextStyle
+{
+    internal double Size;
+    internal double Leading;
+}

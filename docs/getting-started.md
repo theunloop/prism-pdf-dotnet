@@ -178,8 +178,103 @@ if (report.Mode is OpenMode.Recovered)
 Never widen a limit merely to accept one malformed file. Raise only the bound a trusted operational
 requirement implicates, and keep the total object ceiling.
 
-## What is not here yet
+## Creating PDFs
 
-Creating PDFs from scratch — the `Builder`, the `Flow` layout engine, and declarative
-`Composition` — is not bound yet, and neither is PDF/A or PDF/UA production. See
-[roadmap.md](roadmap.md).
+There are three ways to make a document, in increasing order of how much the engine decides for
+you.
+
+**Draw it.** A `Content` stream is the PDF operators of §8 and §9, one method each, handed to a
+`Builder` as a page:
+
+```csharp
+using var content = new Content();
+content.BeginText();
+content.SetFont("F1", 24);
+content.TextMove(72, 700);
+content.ShowText("Hello");
+content.EndText();
+
+using var builder = new Builder { Title = "Greeting" };
+builder.AddPage(content, new Dictionary<string, StdFont> { ["F1"] = StdFont.Helvetica });
+
+File.WriteAllBytes("hello.pdf", builder.Build());
+```
+
+The builder survives being built — keep adding pages and build again. `PageSpec` is the longer
+form, for a page that needs its own media box or an image resource; `StructNode` builds the logical
+structure tree that makes the result tagged.
+
+**Pour it.** A `Flow` wraps lines and breaks pages itself:
+
+```csharp
+using var flow = new Flow(PdfSize.A4, PdfMargins.Uniform(72),
+    new Dictionary<string, StdFont> { ["F1"] = StdFont.Helvetica });
+using var body = new TextBlock("F1", "Helvetica", 11, 14);
+
+flow.SetTagged("en-GB");
+flow.AddHeading(1, body, "Quarterly report");
+flow.AddText(body, prose);
+
+File.WriteAllBytes("report.pdf", flow.Build());
+```
+
+`Build()` and `IntoBuilder()` both **consume** the flow — after either, the handle is dead, and
+using it raises `ObjectDisposedException`. `IntoBuilder()` is how a flowed document gets
+post-processed: attachments, annotations, a conformance pass.
+
+**Describe it.** A `Composition` is a tree of boxes the engine measures and paginates — the richest
+of the three, and the one that produces tagged output most directly. Each handle addresses one
+*slot*: a `Set…` fills it and spends the handle, an `Add…` appends to a container and does not.
+
+```csharp
+using var composition = new Composition { TaggedLanguage = "en-GB" };
+using var page = composition.AddPage(PdfSize.A4, PdfMargins.Uniform(48));
+using var column = page.SetColumn(12);
+
+using (var slot = column.AddItem())
+{
+    using var heading = slot.SetHeading(1);
+    heading.SetText("Invoice", 20, 24);
+}
+
+File.WriteAllBytes("invoice.pdf", composition.Build());
+```
+
+## Conformant output: PDF/A and PDF/UA
+
+A conformance pass finalises a builder as a document that meets a standard, or refuses and names
+the rule:
+
+```csharp
+using var metadata = new XmpMetadata { Title = "Quarterly report" };
+metadata.AddAuthor("Finance");
+
+try
+{
+    builder.MakePdfUa(metadata, "en-GB");
+}
+catch (PrismPdfConformanceException ex)
+{
+    // ex.Issue is FigureWithoutAlt, NotTagged, UnembeddedFont, … — actionable, unlike the status.
+}
+```
+
+Both standards require every font to be embedded, so a Standard-14 document cannot conform. The
+route to a conformant file today is `Flow.EmbedFont` with a real sfnt program, then `IntoBuilder()`
+— and the resource name must *not* also be declared as a Standard-14 font in the flow's
+constructor, or the pass refuses it as unembedded.
+
+## The escape hatch
+
+When the modelled API has no answer, read the file itself (§7.3):
+
+```csharp
+using var catalog = doc.CatalogObject();
+using var names = catalog.DictionaryGet("Names");    // null when absent, not an error
+
+using var edit = new Edit(doc);
+edit.SetObject(reference, changed);
+using var report = edit.Commit(EditCommitMode.Incremental);   // keeps signatures intact
+```
+
+Prefer the model when it has an answer: it keeps invariants that hand-edited objects can break.

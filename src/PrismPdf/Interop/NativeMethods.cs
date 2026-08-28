@@ -596,4 +596,737 @@ internal static unsafe class NativeMethods
 
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     internal static extern PrismPdfStatus prismpdf_signature_revocation(nint sig, Revocation* out_revocation);
+
+    // ---------------------------------------------------------------------------------------
+    // Content streams (8.2, 9.4, 14.6)
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_content_new();
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_content_free(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_bytes(nint content, byte** out_data, nuint* out_len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_save(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_restore(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_transform(nint content, double a, double b, double c, double d, double e, double f);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_line_width(nint content, double width);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_fill_gray(nint content, double gray);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_stroke_gray(nint content, double gray);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_fill_rgb(nint content, double r, double g, double b);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_stroke_rgb(nint content, double r, double g, double b);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_fill_cmyk(nint content, double c, double m, double y, double k);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_move_to(nint content, double x, double y);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_line_to(nint content, double x, double y);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_curve_to(nint content, double x1, double y1, double x2, double y2, double x3, double y3);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_rect(nint content, double x, double y, double w, double h);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_close_path(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_stroke(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_fill(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_fill_and_stroke(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_begin_text(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_end_text(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_char_spacing(nint content, double spacing);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_word_spacing(nint content, double spacing);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_leading(nint content, double leading);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_text_move(nint content, double tx, double ty);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_text_matrix(nint content, double a, double b, double c, double d, double e, double f);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_next_line(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_begin_artifact(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_end_marked_content(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_fill_color_space(nint content, byte* name);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_fill_color(nint content, double* components, nuint count);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_do_xobject(nint content, byte* name);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_inline_image(nint content, uint width, uint height, byte* cs, uint bits_per_component, byte* data, nuint data_len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_set_font(nint content, byte* name, double size);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_show_text(nint content, byte* bytes, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_show_str(nint content, byte* text);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_show_glyphs(nint content, ushort* gids, nuint count);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_begin_marked_content(nint content, byte* tag, uint mcid);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_content_begin_af_marked_content(nint content, byte* property);
+
+    // ---------------------------------------------------------------------------------------
+    // Image sources (8.9) — page and flow image resources
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_image_source_from_jpeg(byte* data, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_image_source_from_rgb(uint width, uint height, byte* data, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_image_source_from_gray(uint width, uint height, byte* data, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_image_source_from_rgba(uint width, uint height, byte* data, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_image_source_size(nint image, uint* out_width, uint* out_height);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_image_source_free(nint image);
+
+    // ---------------------------------------------------------------------------------------
+    // Page specifications (7.7.3.3, 7.8.2)
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_page_spec_new(nint content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_page_spec_free(nint page);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_page_spec_set_media_box(nint page, double llx, double lly, double urx, double ury);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_page_spec_add_standard_font(nint page, byte* name, StdFont font);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_page_spec_add_embedded_font(nint page, byte* name);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_page_spec_add_image(nint page, byte* name, nint image);
+
+    // ---------------------------------------------------------------------------------------
+    // Logical structure nodes (14.7)
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_struct_node_new(byte* tag);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_struct_node_free(nint node);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_set_alt(nint node, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_set_actual_text(nint node, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_set_lang(nint node, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_set_namespace(nint node, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_set_id(nint node, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_add_reference(nint node, byte* target_id);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_add_name_attribute(nint node, byte* owner, byte* key, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_add_integer_attribute(nint node, byte* owner, byte* key, long value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_add_text_attribute(nint node, byte* owner, byte* key, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_add_content(nint node, nuint page_index, uint mcid);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_add_widget(nint node, nuint field_index);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_add_annotation(nint node, nuint annotation_index);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_add_child(nint parent, nint child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_struct_node_associate_file(nint node, byte* name, byte* mime, byte* relationship, byte* description, byte* data, nuint data_len);
+
+    // ---------------------------------------------------------------------------------------
+    // Document builder (7.7)
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_builder_new();
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_builder_free(nint builder);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_build(nint builder, byte** out_data, nuint* out_len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_build_for(nint builder, byte major, byte minor, byte** out_data, nuint* out_len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_version(nint builder, byte major, byte minor);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_media_box(nint builder, double* media_box);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_add_page(nint builder, byte* content, nuint content_len, byte** font_names, StdFont* fonts, nuint font_count);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_add_page_spec(nint builder, nint page);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_title(nint builder, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_author(nint builder, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_subject(nint builder, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_keywords(nint builder, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_creator(nint builder, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_info(nint builder, byte* key, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_clear_info(nint builder);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_metadata_xmp(nint builder, byte* xmp, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_lang(nint builder, byte* code);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_file_id(nint builder, byte* id, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_utf8_text_strings(nint builder);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_display_doc_title(nint builder, byte on);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_output_intent(nint builder, byte* icc, nuint icc_len, uint n, byte* identifier);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_add_outline(nint builder, byte* title, nuint page_index);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_attach_file(nint builder, byte* name, byte* mime, byte* relationship, byte* description, byte* data, nuint data_len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_add_link_uri(nint builder, nuint page_index, double* rect, byte* uri, byte* contents);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_add_link_page(nint builder, nuint page_index, double* rect, nuint target_page, byte* contents);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_add_link_element(nint builder, nuint page_index, double* rect, byte* element_id, byte* contents);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_add_link_document_part(nint builder, nuint page_index, double* rect, nuint part_index, byte* contents);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_add_note(nint builder, nuint page_index, double* rect, byte* contents);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_add_checkbox(nint builder, nuint page_index, double* rect, byte* name, byte @checked, byte* tooltip);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_add_structure_node(nint builder, nint node);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_set_structure_namespace(nint builder, byte* uri);
+
+    // ---------------------------------------------------------------------------------------
+    // Text styles and measurement (9.4)
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_text_block_new(byte* font_resource, byte* base_font, double size, double leading, Align align);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_text_block_free(nint block);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_measure_text(nint block, byte* text, double* out_width);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_wrap_text(nint block, byte* text, double width, nint* out_list);
+
+    // ---------------------------------------------------------------------------------------
+    // Tables
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_table_new(double* columns, nuint count);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_table_free(nint table);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_table_set_font(nint table, byte* resource, byte* base_font);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_table_set_size(nint table, double size);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_table_set_leading(nint table, double leading);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_table_set_padding(nint table, double padding);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_table_set_border(nint table, double width);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_table_set_header_row(nint table, byte on);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_table_set_align(nint table, Align align);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_table_add_row(nint table, byte** cells, nuint count);
+
+    // ---------------------------------------------------------------------------------------
+    // Flowed layout
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_flow_new(double* size, double* margins, byte** font_names, StdFont* fonts, nuint font_count);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_flow_free(nint flow);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_build(nint flow, byte** out_data, nuint* out_len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_into_builder(nint flow, nint* out_builder);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_set_tagged(nint flow, byte* lang);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_embed_font(nint flow, byte* resource, byte* program, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_set_title(nint flow, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_set_author(nint flow, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_set_info(nint flow, byte* key, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_add_bookmark(nint flow, byte* title);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_text(nint flow, nint block, byte* text);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_heading(nint flow, byte level, nint block, byte* text);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_title_element(nint flow, nint block, byte* text);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_list(nint flow, nint block, byte** items, nuint count, ListStyle style);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_table(nint flow, nint table);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_image(nint flow, nint image, double width, double height);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_image_fit(nint flow, nint image, double max_width);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_figure(nint flow, nint image, double width, double height, byte* alt);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_figure_fit(nint flow, nint image, double max_width, byte* alt);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_figure_with_caption(nint flow, nint image, double width, double height, byte* alt, nint block, byte* caption);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_note(nint flow, nint block, byte* text, byte* id);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_fenote(nint flow, nint block, byte* text, byte* id, byte** citations, nuint citation_count);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_formula(nint flow, nint block, byte* text, byte* actual_text);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_set_header(nint flow, nint block, byte* text);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_set_footer(nint flow, nint block, byte* text);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_space(nint flow, double dy);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_page_break(nint flow);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_page_count(nint flow, nuint* out_count);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_flow_cursor_y(nint flow, double* out_y);
+
+    // ---------------------------------------------------------------------------------------
+    // Declarative composition (the arena model)
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_composition_new();
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_composition_free(nint composition);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_build(nint composition, byte** out_data, nuint* out_len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_set_tagged_language(nint composition, byte* lang);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_add_page(nint composition, PrismPdfCompositionPageStyle* style, nint* out_content);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_page_set_header(nint composition, nuint page_index, nint* out_header);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_page_set_footer(nint composition, nuint page_index, nint* out_footer);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_composition_container_free(nint container);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_column(nint container, double spacing, nint* out_column);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_column_add_item(nint column, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_row(nint container, nint* out_row);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_row_add_fixed(nint row, double width, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_row_add_relative(nint row, double factor, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_row_add_auto(nint row, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_table(nint container, nint* out_table);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_table_add_fixed_column(nint table, double width);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_table_add_relative_column(nint table, double factor);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_table_add_auto_column(nint table);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_table_set_header(nint table, nint* out_row);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_table_add_row(nint table, nint* out_row);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_table_row_add_cell(nint row, nint* out_cell);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_text(nint container, byte* text, PrismPdfCompositionTextStyle* style);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_image(nint container, nint image, CompositionImageSizing sizing, double width, double height);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_page_break(nint container);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_semantic(nint container, CompositionSemantic semantic, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_heading(nint container, byte level, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_link(nint container, byte* uri, byte* description, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_figure(nint container, byte* alt, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_padding(nint container, double points, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_width(nint container, double points, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_height(nint container, double points, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_alignment(nint container, CompositionHorizontalAlign horizontal, CompositionVerticalAlign vertical, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_extend(nint container, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_border(nint container, double width, PrismPdfCompositionColor color, nint* out_child);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_composition_container_set_background(nint container, PrismPdfCompositionColor color, nint* out_child);
+
+    // ---------------------------------------------------------------------------------------
+    // Conformance: PDF/A (ISO 19005) and PDF/UA (ISO 14289)
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern byte prismpdf_pdfa_part(PdfAConformance conformance);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern byte prismpdf_pdfa_allows_attachments(PdfAConformance conformance);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_pdfa_code(PdfAConformance conformance, byte** out_text);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_xmp_metadata_new();
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_xmp_metadata_free(nint meta);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_xmp_metadata_set_title(nint meta, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_xmp_metadata_add_author(nint meta, byte* author);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_xmp_metadata_set_subject(nint meta, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_xmp_metadata_set_keywords(nint meta, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_xmp_metadata_set_creator_tool(nint meta, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_xmp_metadata_set_producer(nint meta, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_xmp_metadata_set_create_date(nint meta, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_xmp_metadata_set_modify_date(nint meta, byte* value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_make_pdfa(nint builder, PdfAConformance conformance, nint meta, ConformanceIssue* out_issue);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_make_pdfa_with_output_intent(nint builder, PdfAConformance conformance, nint meta, byte* icc, nuint icc_len, uint n, byte* identifier, ConformanceIssue* out_issue);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_make_pdfua(nint builder, nint meta, byte* lang, ConformanceIssue* out_issue);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_builder_make_pdfua2(nint builder, nint meta, byte* lang, ConformanceIssue* out_issue);
+
+    // ---------------------------------------------------------------------------------------
+    // COS inspection (7.3)
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_document_catalog_object(nint doc, nint* out_object);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_document_page_object(nint doc, nuint page_index, nint* out_object);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_document_get_object(nint doc, uint number, ushort generation, nint* out_object);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_document_resolve_object(nint doc, nint @object, nint* out_object);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_object_free(nint @object);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_clone(nint @object);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_kind(nint @object, ObjectKind* out_kind);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_boolean(nint @object, byte* out_value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_integer(nint @object, long* out_value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_real(nint @object, double* out_value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_bytes(nint @object, byte** out_data, nuint* out_len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_reference(nint @object, uint* out_number, ushort* out_generation);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_array_len(nint @object, nuint* out_len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_array_get(nint @object, nuint index, nint* out_item);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_dictionary_len(nint @object, nuint* out_len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_dictionary_get(nint @object, byte* key, nuint key_len, nint* out_value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_stream_raw(nint @object, byte** out_data, nuint* out_len);
+
+    // ---------------------------------------------------------------------------------------
+    // COS construction (7.3)
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_new_null();
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_new_boolean(byte value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_new_integer(long value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_new_real(double value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_new_string(byte* data, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_new_name(byte* data, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_new_reference(uint number, ushort generation);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_new_array();
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_new_dictionary();
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_object_new_stream(nint dictionary, byte* data, nuint len);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_array_push(nint array, nint value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_object_dictionary_set(nint dictionary, byte* key, nuint key_len, nint value);
+
+    // ---------------------------------------------------------------------------------------
+    // Object editing (7.5)
+    // ---------------------------------------------------------------------------------------
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern nint prismpdf_edit_new(nint doc);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern void prismpdf_edit_free(nint edit);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_edit_set_object(nint edit, uint number, ushort generation, nint value);
+
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    internal static extern PrismPdfStatus prismpdf_edit_commit(nint edit, nint doc, EditCommitMode mode, nint* out_report);
 }

@@ -29,7 +29,7 @@ The core's binding author's guide is prescriptive here, and this SDK follows it 
          ▼
 ┌────────────────────────────────────────────────────────┐
 │  raw layer         namespace PrismPdf.Interop           │
-│  NativeMethods — 159 [DllImport] declarations          │
+│  NativeMethods — 386 [DllImport] declarations          │
 │  NativeLibraryResolver — where libpdf_ffi lives        │
 │                                                        │
 │  · no logic, no ownership, no error handling           │

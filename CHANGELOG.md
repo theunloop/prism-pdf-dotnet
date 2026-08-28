@@ -22,8 +22,9 @@ Initial binding against Prism PDF core **`v0.4.0`**.
 > `limopdf_*` → `prismpdf_*` rename is applied, still 386 exports — so the rename cost the
 > binding no behaviour.
 
-- **Raw layer** — 159 `[DllImport]` declarations generated from the vendored `prismpdf.h` by
-  `build/gen_native_methods.py`, with cdecl and `ExactSpelling` pinned on every one.
+- **Raw layer** — all **386** `[DllImport]` declarations generated from the vendored `prismpdf.h`
+  by `build/gen_native_methods.py`, with cdecl and `ExactSpelling` pinned on every one. The
+  generated file covers the header exactly; `NativeSurfaceTests` fails if it stops doing so.
 - **Targets `netstandard2.0`**, so the binding is consumable from .NET Framework 4.6.1+, .NET Core
   2.0+, .NET 5+, Mono, Unity and Xamarin. `src/PrismPdf/Compat/` re-declares, `internal`, what
   netstandard2.0 lacks — `NativeMemory`, the `ThrowIf*` argument guards, `IsExternalInit`,
@@ -44,15 +45,41 @@ Initial binding against Prism PDF core **`v0.4.0`**.
 - **Security** — `Permissions`, the `SaveEncrypted…` family (RC4, AES-128, AES-256, AES-256-GCM,
   public-key, PDF MAC), `SignSettings`, signing, timestamping, and verification with integrity,
   trust and LTV.
-- **`Pdf`** — `Version` and `Merge`.
+- **`Pdf`** — `Version`, `Merge`, and the PDF/A level helpers (`PdfAPart`,
+  `PdfAAllowsAttachments`, `PdfACode`).
+- **Authoring** — `Content` (every content-stream operator of §8 and §9, marked content, inline
+  images), `Builder` (pages, metadata, outline, attachments, the flattened link and annotation
+  entry points, version pinning), `PageSpec`, `StructNode` (the logical structure tree, including
+  the consuming transfers), `ImageSource`, and the `StdFont` enum.
+- **Layout** — `Flow` (paragraphs, headings, lists, tables, images, tagged figures, footnotes,
+  formulas, running headers and footers, explicit breaks, cursor and page-count introspection),
+  `Table`, `TextBlock` with `MeasureText` and `WrapText`, and `Flow.IntoBuilder()` as the
+  composition point into `Builder`.
+- **Declarative composition** — `Composition` and `CompositionContainer`: pages, columns, rows,
+  paginating tables with repeating headers, box decoration and constraints, structure roles,
+  images, page breaks, and `{page}`/`{pages}` substitution in running furniture. The arena's
+  generations are left to the engine, which reports a spent handle as `InvalidUse`.
+- **Conformance production** — `Builder.MakePdfA`, `.MakePdfUa`, `.MakePdfUa2`, `XmpMetadata`, and
+  `PrismPdfConformanceException` carrying a `ConformanceIssue`, so a refusal names the rule that
+  was unmet. `PrismPdfException` is unsealed for that one subtype; `catch (PrismPdfException)`
+  still catches every failure.
+- **COS inspection and editing** — `Document.CatalogObject()`, `.PageObject()`, `.GetObject()`,
+  `.ResolveObject()`, the `PdfObject` value model with typed accessors and constructors,
+  `PdfReference`, and `Edit` with incremental and full-rewrite commits.
+- **Geometry and colour value types** — `PdfSize`, `PdfMargins`, `PdfColor`, alongside the existing
+  `PdfRect`.
 - **Native library probing** — `PRISMPDF_NATIVE_PATH`, then the assembly's own directory, then the
   packaged `runtimes/<rid>/native/` layout, then `native/lib/`, then the runtime's default rules.
   The identifier comes from the *process* architecture, and on Linux carries the libc flavour, so
   a musl host asks for `linux-musl-<arch>` before `linux-<arch>`. `dlopen` is reached through
   `libdl.so.2`, `libdl` or `libc`, the last for musl systems that have no `libdl`.
-- **Conformance suite** — the vertical slice, the parse / manipulate / failure-path / security
-  journeys against the shared corpus, the raw-layer completeness check, `CompatTests` over the
-  netstandard2.0 substitutes, and `LoaderTests` over the probing rules.
+- **Conformance suite** — the vertical slice; the parse, manipulate, failure-path, security,
+  create, compose, conformance and COS journeys against the shared corpus; the anchor acceptance
+  test (a port of the core's `compose_invoice.c`, the tagged multipage invoice every binding
+  builds); the raw-layer completeness check; `CompatTests` over the netstandard2.0 substitutes; and
+  `LoaderTests` over the probing rules. One test — the PDF/UA success path — needs an sfnt font
+  program the shared corpus does not ship, and skips unless `PRISMPDF_TEST_FONT` or a system font
+  directory supplies one.
 - **Packaging** — one NuGet package (~20 MB) carrying the engine for ten runtime identifiers at
   `runtimes/<rid>/native/`: `win-x64`, `win-x86`, `win-arm64`, `linux-x64`, `linux-arm64`,
   `linux-arm`, `linux-musl-x64`, `linux-musl-arm64`, `osx-x64`, `osx-arm64`. Consumers install
@@ -77,4 +104,4 @@ Initial binding against Prism PDF core **`v0.4.0`**.
 ### Not yet bound
 
 Authoring (`Builder`, content streams), layout (`Flow`), declarative composition, PDF/A and PDF/UA
-production, and COS inspection — 227 of the header's 386 exports. See `docs/roadmap.md`.
+production, and COS inspection — 227 of the header's 386 exports.

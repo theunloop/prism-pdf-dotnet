@@ -21,8 +21,8 @@ namespace PrismPdf.Tests;
 /// <para>
 /// So this fixture parses <c>native/include/prismpdf.h</c> and asserts that every export the raw
 /// layer declares still exists in it. It also prints — without failing — which header exports are
-/// not bound yet, so the coverage gap is visible on every run instead of living only in a roadmap
-/// document that can go stale.
+/// not bound yet, so the coverage is visible on every run rather than living in a document that
+/// can go stale. As of core v0.4.0 nothing is unbound, and this is what says so.
 /// </para>
 /// </remarks>
 [TestFixture]
@@ -76,8 +76,9 @@ public sealed class NativeSurfaceTests
     }
 
     /// <summary>
-    /// Reports the coverage gap between the header and the raw layer. Informational: the ABI is
-    /// append-only, so unbound exports are a roadmap item, not a defect.
+    /// Reports the coverage of the header by the raw layer. Informational rather than enforced:
+    /// the ABI is append-only, so a newly vendored header can add exports this SDK has not bound
+    /// yet, and that is a task rather than a defect.
     /// </summary>
     [Test]
     public void CoverageGap_IsReported()

@@ -7,8 +7,9 @@ a garbage-collected language, and what you have to do about them.
 
 Anything deriving from `PrismPdfHandle` owns native memory:
 
-`Document`, `OpenOptions`, `OpenReport`, `TransformReport`, `SignSettings`, and every
-`…List`.
+`Document`, `OpenOptions`, `OpenReport`, `TransformReport`, `SignSettings`, `Content`, `Builder`,
+`PageSpec`, `StructNode`, `ImageSource`, `Flow`, `Table`, `TextBlock`, `Composition`,
+`CompositionContainer`, `XmpMetadata`, `PdfObject`, `Edit`, and every `…List`.
 
 ```csharp
 using var doc = Document.OpenFile("input.pdf");
@@ -74,19 +75,49 @@ Disposing the root invalidates every entry in the tree, nested ones included.
 
 ## Consuming calls
 
-Some ABI calls take ownership of a handle **on success only**; a validation failure leaves it with
-the caller. `PrismPdfHandle.MarkConsumed()` is how a wrapper records that, and it is called only
-when the native call returned `Ok`.
+Some ABI calls take ownership of a handle. The contract for you is the same in every case: after
+the call the wrapper is dead, touching it raises `ObjectDisposedException`, and you must not free
+it — the library owns those bytes now. `using` on a consumed handle stays correct, because
+`Dispose` on an already-consumed wrapper is a no-op.
 
-No entry point in the currently shipped surface consumes a handle — the consuming calls all live in
-the authoring, layout, and composition areas (`edit_commit`, `builder` page and struct commits,
-`flow_build`, `flow_into_builder`, `composition_build`). The machinery is in place and tested so
-those areas can be added without revisiting the lifetime model.
+```csharp
+using var content = new Content();
+var page = new PageSpec(content);
 
-When they arrive, the contract for you is: after a successful consuming call the wrapper is dead,
-and touching it raises `ObjectDisposedException`. Do not dispose it — the library owns those bytes
-now. `using` on a consumed handle is still correct: `Dispose` on an already-consumed wrapper is a
-no-op.
+using var builder = new Builder();
+builder.AddPageSpec(page);      // consumes `page`
+
+page.IsInvalid;                 // true
+page.AddStandardFont("F1", StdFont.Helvetica);   // ObjectDisposedException
+page.Dispose();                 // no-op, not a double free
+```
+
+**When** ownership transfers is not uniform across the ABI, and getting it wrong is a double free.
+There are three shapes:
+
+| Shape | Calls | What the wrapper does |
+|---|---|---|
+| Consumes **on success only** | `builder.AddPageSpec`, `builder.AddStructureNode`, `node.AddChild`, `edit.Commit` | `MarkConsumed()` after the status came back `Ok`; a rejection leaves the handle owned and usable |
+| Consumes **unconditionally** | `flow.Build`, `flow.IntoBuilder` | `MarkConsumed()` *before* the call — the ABI takes the box as it is entered, so a failure must not leave a wrapper that would free it again |
+| **Finalises without consuming** | `composition.Build` | nothing; the composition becomes immutable but the handle is still yours to dispose |
+
+Semantic contract 3 describes only the first shape. Each export's header comment says which one it
+is; read it before binding a new consuming call.
+
+## Composition containers are scoped handles, not nodes
+
+A `CompositionContainer` addresses one slot in the composition's arena. Three consequences:
+
+- **Disposing a container releases the handle, not the node.** The node stays in the composition,
+  which is why a tree written with nested `using` declarations still builds completely.
+- **Filling a slot spends its handle.** The engine advances the slot's generation, so the next use
+  of that handle raises `PrismPdfException` with `InvalidUse` — from the library, not from managed
+  code, because the engine is the only thing that knows which calls consume a generation.
+  Appending to a column, a row or a table does not spend anything.
+- **Releasing the composition leaves surviving containers safe.** They are invalidated without
+  being left pointing at freed memory, and disposing them afterwards is fine. Each container also
+  holds a reference to its composition, so the collector cannot finalise the arena underneath a
+  live handle.
 
 ## Strings and buffers
 

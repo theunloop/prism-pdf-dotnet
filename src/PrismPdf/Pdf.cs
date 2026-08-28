@@ -79,6 +79,34 @@ public static unsafe class Pdf
         }
     }
 
+    /// <summary>The ISO 19005 part number of a conformance level: 1, 2, 3 or 4.</summary>
+    /// <param name="conformance">The level.</param>
+    /// <returns>The part number.</returns>
+    public static int PdfAPart(PdfAConformance conformance)
+        => NativeMethods.prismpdf_pdfa_part(conformance);
+
+    /// <summary>
+    /// Whether a level permits embedded files — only PDF/A-3 and PDF/A-4f do (§6.8).
+    /// </summary>
+    /// <remarks>
+    /// Check this before attaching a file to a document destined for PDF/A: the conformance pass
+    /// would otherwise refuse it with <see cref="ConformanceIssue.AttachmentRequiresPdfA3"/>.
+    /// </remarks>
+    /// <param name="conformance">The level.</param>
+    /// <returns><see langword="true"/> when attachments are permitted.</returns>
+    public static bool PdfAAllowsAttachments(PdfAConformance conformance)
+        => Native.ToBool(NativeMethods.prismpdf_pdfa_allows_attachments(conformance));
+
+    /// <summary>The conformance code as it appears in XMP, e.g. <c>2u</c>.</summary>
+    /// <param name="conformance">The level.</param>
+    /// <returns>The code.</returns>
+    public static string PdfACode(PdfAConformance conformance)
+    {
+        byte* text = null;
+        Native.Check(NativeMethods.prismpdf_pdfa_code(conformance, &text), "prismpdf_pdfa_code");
+        return Native.TakeString(text) ?? string.Empty;
+    }
+
     private static nint[] CollectHandles(IReadOnlyList<Document> documents)
     {
         Throw.IfNull(documents);

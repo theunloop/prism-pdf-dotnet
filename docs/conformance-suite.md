@@ -50,8 +50,11 @@ suite would still pass if the engine stopped recovering and simply refused them.
 | **Manipulate** | `manipulate.md` | `ManipulateJourneyTests` | ✅ |
 | **Failure paths** | `errors-limits.md` | `FailurePathTests` | ✅ |
 | **Security** | "Security" | `SecurityJourneyTests` | ✅ encrypt, permissions, sign, verify |
-| **Create** | `create.md` | — | ⬜ blocked: `Builder` not bound |
-| **Compose** | `compose.md` | — | ⬜ blocked: `Composition` not bound |
+| **Create** | `create.md` | `CreateJourneyTests` | ✅ build, page specs, structure, annotations |
+| **Compose** | `compose.md` | `ComposeJourneyTests`, `CompositionTests` | ✅ flow and the arena, incl. the anchor invoice |
+| **Content streams** | — (this SDK's own) | `ContentStreamTests` | ✅ every operator, asserted on the emitted bytes |
+| **Conformance production** | `create.md` (PDF/A, PDF/UA) | `ConformanceJourneyTests` | ✅ refusals; the success path needs a font (see below) |
+| **COS inspection & editing** | — (this SDK's own) | `CosJourneyTests` | ✅ read, construct, commit |
 | **Raw-layer completeness** | "its completeness check is the analogue of `header_surface.c`" | `NativeSurfaceTests` | ✅ |
 | **netstandard2.0 substitutes** | — (this SDK's own) | `CompatTests` | ✅ |
 | **Native library probing** | — (this SDK's own) | `LoaderTests` | ✅ |
@@ -105,9 +108,9 @@ declaration that no longer matches the vendored header. `NativeSurfaceTests` the
 
 1. every raw-layer declaration still exists in the header;
 2. every declaration pins the cdecl calling convention and `ExactSpelling`;
-3. the coverage gap is *reported* — printed, grouped by area, not failed. The ABI is append-only,
-   so unbound exports are a roadmap item rather than a defect, and printing them on every run keeps
-   the gap visible instead of letting a roadmap document go stale.
+3. the coverage is *reported* — printed, grouped by area, not failed. Every export is bound
+   today; the ABI is append-only, so a newly vendored header can only widen the gap, and printing
+   it on every run is what keeps that visible without a document to maintain.
 
 ## Running
 
@@ -123,13 +126,30 @@ dotnet test --filter "FullyQualifiedName~CompatTests"
 dotnet test --filter "FullyQualifiedName~LoaderTests"
 ```
 
-## The anchor test that is still missing
+## The anchor test
 
 The guide names one specific acceptance test: a port of
 `crates/pdf-ffi/tests/c/compose_invoice.c`, the standalone C consumer that builds a tagged
 multipage invoice through the composition API. *"Every binding builds the same invoice and asserts
 on it by reopening."*
 
-That is the gate for the compose area, and it is the single best measure of when this SDK is
-done — it exercises composition, tagging, pagination, tables, and images in one artefact. It cannot
-be written until the composition surface is bound; see [roadmap.md](roadmap.md).
+It is `CompositionTests.ComposeInvoice_IsTheAnchorAcceptanceTest`. A tagged composition with a
+repeating header and footer, a heading, a two-column party block, a 45-row table that paginates and
+repeats its header row, a bordered total and a closing paragraph — asserted on by reopening the
+bytes: page count greater than one, the first line item on page 1, the total and the closing
+paragraph where pagination actually put them, and `Page n of m` substituted on every page.
+
+## The one test that skips
+
+`ConformanceJourneyTests.MakePdfUa_AcceptsATaggedDocumentWithAnEmbeddedFont` needs an sfnt font
+program, because PDF/A and PDF/UA both refuse a Standard-14 font. The shared corpus ships none, so
+the test looks for one — `PRISMPDF_TEST_FONT`, then the usual system font directories — and
+`Assert.Ignore`s when it finds nothing, in the same spirit as the suites that skip without a native
+library. The refusal paths, which are what the binding actually has to get right, always run.
+
+```bash
+PRISMPDF_TEST_FONT=/path/to/some.ttf dotnet test
+```
+
+Three small font files in the corpus artifact would make this unconditional for every binding —
+see the feedback list in [`CONTRIBUTING.md`](../CONTRIBUTING.md).
