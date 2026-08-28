@@ -177,3 +177,9 @@ file upstream, as its own final checklist item asks.
 ## License
 
 [MIT](LICENSE.md), the same as Prism PDF itself.
+
+The package also carries `THIRD-PARTY-NOTICES.md`, the engine's own record of material that is
+*not* MIT — vendored source, bundled assets, and tables generated from third-party data. Shipping
+a compiled library means redistributing what it was built from, so those licences travel with it.
+The file is fetched from the same core tag as the binaries rather than reconstructed here, so it
+cannot drift from what is actually inside the package.

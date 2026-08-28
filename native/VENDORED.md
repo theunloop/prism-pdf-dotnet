@@ -59,6 +59,13 @@ which is the layout `dotnet pack` carries and the layout the loader probes.
 `build/build-native.sh` remains the from-source path for anyone working on the engine itself, and
 takes `--core <path>` so that checkout can live anywhere rather than inside this repository.
 
+### Third-party notices
+
+`build/fetch-natives.sh` also fetches the core's `THIRD-PARTY-NOTICES.md` at the pinned tag into
+`native/`, and `dotnet pack` puts it at the root of the package. It records the material in the
+engine that is not MIT. Taking it from the tag rather than maintaining a copy here is deliberate:
+a second list would be a second thing to forget to update.
+
 ### Test inputs
 
 `--corpus` additionally stages `native/corpus/` from `prism-pdf-corpus-v0.4.0.tar.gz` and

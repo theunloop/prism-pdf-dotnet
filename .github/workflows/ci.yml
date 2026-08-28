@@ -27,8 +27,8 @@ jobs:
     name: managed
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DOTNET_VERSIONS }}
 
@@ -58,7 +58,7 @@ jobs:
     name: natives
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Fetch and verify the published natives and corpus
         env:
@@ -67,7 +67,7 @@ jobs:
           GH_TOKEN: ${{ secrets.PRISMPDF_CORE_TOKEN }}
         run: build/fetch-natives.sh --tag "${PRISMPDF_CORE_TAG}" --corpus
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: engine
           if-no-files-found: error
@@ -101,10 +101,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The container image already carries an SDK, and setup-dotnet does not support musl.
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         if: matrix.container == ''
         with:
           dotnet-version: ${{ env.DOTNET_VERSIONS }}
@@ -112,7 +112,7 @@ jobs:
       # upload-artifact strips the least common ancestor of the paths it was given, so this
       # artifact's root holds runtimes/, corpus/ and test-signer/ rather than native/*. Unpack it
       # back under native/, which is where the test project and the loader expect them.
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: engine
           path: native
@@ -162,16 +162,16 @@ jobs:
     needs: [managed, natives]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # SourceLink and the <repository> element want real history, not a shallow clone.
           fetch-depth: 0
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DOTNET_VERSIONS }}
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: engine
           path: native
@@ -196,7 +196,7 @@ jobs:
           done
           echo "all ten runtime identifiers present"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: nupkg
           path: artifacts/*
@@ -240,12 +240,12 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: nupkg
           path: artifacts
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DOTNET_VERSIONS }}
 

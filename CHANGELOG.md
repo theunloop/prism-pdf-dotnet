@@ -61,6 +61,9 @@ Initial binding against Prism PDF core **`v0.4.0`**.
   unpack `runtimes/`, so it copies the Windows libraries to the output directory, where the
   resolver's own probing finds them. The core's Android RIDs are deliberately omitted until there
   is a `net8.0-android` target that could load them.
+- **Licensing** — the package carries `LICENSE.md` (MIT) and the engine's own
+  `THIRD-PARTY-NOTICES.md`, fetched from the pinned core tag rather than reconstructed here, so
+  the licences governing what is inside the binaries travel with them and cannot drift.
 - **Build tooling** — `build/fetch-natives.sh` downloads the core's published natives and corpus
   for the pinned tag, verifies both the published files and every file inside the bundle, and
   refuses to continue if the bundled header is not the vendored one; `--corpus` also stages the

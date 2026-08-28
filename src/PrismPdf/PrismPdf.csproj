@@ -57,6 +57,10 @@
           Visible="false" />
     <None Include="$(MSBuildThisFileDirectory)../../LICENSE.md" Pack="true" PackagePath="/"
           Visible="false" />
+    <!-- The engine's own notices, fetched with the binaries they describe. Shipping a compiled
+         library means redistributing what it was built from, and those licences travel with it. -->
+    <None Include="$(PrismPdfNativeDir)../THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="/"
+          Visible="false" />
   </ItemGroup>
 
   <!-- A package that quietly ships without its engine is the exact failure this repository set out

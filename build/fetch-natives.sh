@@ -21,6 +21,7 @@ CORE_REPO="theunloop/prism-pdf"
 STAGE_DIR="${REPO_ROOT}/native/runtimes"
 CORPUS_DIR="${REPO_ROOT}/native/corpus"
 SIGNER_DIR="${REPO_ROOT}/native/test-signer"
+NOTICES="${REPO_ROOT}/native/THIRD-PARTY-NOTICES.md"
 TAG=""
 WANT_CORPUS=0
 ALL_RIDS=0
@@ -150,6 +151,17 @@ for rid in "${RIDS[@]}"; do
   mkdir -p "${STAGE_DIR}/${rid}/native"
   cp "${ROOT}/${rid}"/* "${STAGE_DIR}/${rid}/native/"
 done
+
+# The engine's third-party notices. Packaging a compiled binary means redistributing whatever it
+# was built from, so the licences that govern that material have to travel with it. This is the
+# core's own record, taken from the same tag as the binaries, rather than a list reconstructed
+# here — reconstructing it would be a second source of truth that silently goes stale.
+echo "==> fetching the engine's third-party notices"
+if ! gh api "repos/${CORE_REPO}/contents/THIRD-PARTY-NOTICES.md?ref=${TAG}" \
+     -H "Accept: application/vnd.github.raw" > "${NOTICES}"; then
+  echo "error: could not fetch THIRD-PARTY-NOTICES.md at ${TAG}" >&2
+  exit 1
+fi
 
 if [[ ${WANT_CORPUS} -eq 1 ]]; then
   rm -rf "${CORPUS_DIR}"

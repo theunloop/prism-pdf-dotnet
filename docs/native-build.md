@@ -152,9 +152,14 @@ layout NuGet itself understands. One package carries all ten:
 PrismPdf.<version>.nupkg   ~20 MB
   lib/netstandard2.0/PrismPdf.dll
   build/PrismPdf.targets
+  README.md  LICENSE.md  THIRD-PARTY-NOTICES.md
   runtimes/{win-x64,win-x86,win-arm64,linux-x64,linux-arm64,linux-arm,
             linux-musl-x64,linux-musl-arm64,osx-x64,osx-arm64}/native/
 ```
+
+`THIRD-PARTY-NOTICES.md` is the engine's, fetched from the same tag as the binaries. Packaging a
+compiled library redistributes whatever it was built from, so the licences governing that material
+have to ship with it.
 
 Splitting it per platform would save a consumer nothing: NuGet downloads a package whole, so
 RID-awareness is asset *selection* at build time, not a smaller download. What it would cost is
